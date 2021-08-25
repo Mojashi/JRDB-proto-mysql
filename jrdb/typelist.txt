@@ -1,0 +1,10 @@
+sed,
+srb,
+kyi,
+kka,
+ukc,
+oz,Ozdata_doc.txt
+bac,
+cyb,
+cha,
+tyb,
