@@ -2,7 +2,7 @@
 # https://scrapbox.io/exkeiba/doc%E3%81%AEparse
 
 from typing import List
-from env import DocDir, ProtoDir
+from env import DocDir, ProtoBuildDir, ProtoDir
 from model.schema import DataType, Field
 import logging
 import functools
@@ -39,13 +39,16 @@ def parseDoc(doc: str, dtname:str) -> DataType:
         logging.debug([isRecord, isChild, isParent, haveOcc])
 
         if isRecord:
-            if haveOcc:
-                field = Field(terms[0], int(terms[1]), int(terms[2]), terms[3], int(terms[4]), terms[5] if len(terms) >= 6 else "")
-            else:
-                field = Field(terms[0], 1, int(terms[1]), terms[2], int(terms[3]), terms[4] if len(terms) >= 5 else "")
+            name = terms[0]
             if isChild:
-                field.name = parent+'_'+field.name
+                name = parent+' '+name
+            else:
+                parent=""
 
+            if haveOcc:
+                field = Field(name, int(terms[1]), int(terms[2]), terms[3], int(terms[4]), terms[5] if len(terms) >= 6 else "", terms[0] in ["改行","予備"])
+            else:
+                field = Field(name, 1, int(terms[1]), terms[2], int(terms[3]), terms[4] if len(terms) >= 5 else "", terms[0] in ["改行","予備"])
             dtype.fields.append(field)
 
         if isParent:
@@ -54,11 +57,12 @@ def parseDoc(doc: str, dtname:str) -> DataType:
     return dtype
 
 def getDataType(dtname : str, docDir:str = DocDir) -> DataType:
+    logging.info("parse "+dtname)
     with open(docDir + "/" + dtname, "r") as f:
         return parseDoc(f.read(), dtname)
 
 import os
-def parseAll(docDir:str = DocDir, protoDir : str = ProtoDir):
+def parseAll(docDir:str = DocDir, protoDir : str = ProtoDir, protoBuildDir : str= ProtoBuildDir):
     os.makedirs(protoDir, exist_ok=True)
 
     for docfname in os.listdir(docDir):
@@ -66,7 +70,13 @@ def parseAll(docDir:str = DocDir, protoDir : str = ProtoDir):
         with open(protoDir + "/" + dtype.dtname + ".proto", "w") as protof:
             protof.write(dtype.genProto())
 
+import subprocess
+def execProtoc(protoDir : str = ProtoDir, protoBuildDir : str= ProtoBuildDir):
+    logging.info("compile .proto")
+    os.makedirs(protoBuildDir,exist_ok=True)
+    subprocess.run("protoc --python_out=%s -I%s %s/*.proto" % (protoBuildDir, protoDir, protoDir), shell=True)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     parseAll()
+    execProtoc()
