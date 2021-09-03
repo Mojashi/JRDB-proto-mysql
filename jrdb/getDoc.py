@@ -1,4 +1,5 @@
 #! python
+from helper.dtypeDesc import readDtypeDescs
 import logging
 from env import DTypeListFlie, DocDir
 
@@ -19,16 +20,11 @@ def get(dtypeName : str, docPath : str = None) -> bytes:
     return c
 
 import os
-import json
-def getAll(docDir : str = DocDir ,listFile : str = DTypeListFlie):
+def getAll(docDir : str = DocDir):
     os.makedirs(docDir, exist_ok=True)
 
-    with open(listFile, "r") as f:
-        typeDescs = json.load(f)
-    
-    for typeDesc in typeDescs:
-        dtname = typeDesc["name"]
-        docpath = typeDesc.get("docfile")
+    for dtname,typeDesc in readDtypeDescs().items():
+        docpath = typeDesc.docfile
         with open(docDir + "/" + dtname, "w") as docf:
             docf.write(get(dtname,docpath).decode("shift-jis"))
 
