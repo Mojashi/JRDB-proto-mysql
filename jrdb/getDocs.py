@@ -5,7 +5,6 @@ from env import DTypeListFlie, DocDir
 baseURL = "http://www.jrdb.com/program/%s/%s"
 
 import requests
-from requests.auth import HTTPBasicAuth 
 def get(dtypeName : str, docPath : str = None) -> bytes:
     url = baseURL % (
             dtypeName.capitalize(), 
@@ -13,10 +12,7 @@ def get(dtypeName : str, docPath : str = None) -> bytes:
              dtypeName.lower() + "_doc.txt"
         )
     logging.info("GET %s" % url)
-    resp = requests.get(
-        url,
-        auth=HTTPBasicAuth("user_id", "Passw0rd")
-    ) 
+    resp = requests.get(url) 
     c = resp.content
     resp.close()
     return c

@@ -2,3 +2,5 @@ __pycache__/
 model/__pycache__/
 doc/
 proto/
+secret.py
+data/
