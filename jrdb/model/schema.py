@@ -9,19 +9,34 @@ class Field:
     pyType : Type
     pos:int
     comment:str
-    def __init__(self, name:str, occ:int, size:int, docType:str, pos:int, comment:str = "") -> None:
+    ignored:bool
+
+    def __init__(self, name:str, occ:int, size:int, docType:str, pos:int, comment:str = "", ignored=False) -> None:
         self.name = name
         self.size = size
         self.occ = occ
         self.docType = docType
         self.pos = pos
         self.comment = comment
-
+        if self.occ > 1:
+            self.comment += " repeated:%dtimes" % self.occ
+        self.ignored = ignored
         self.translatedName = translate(name)
         self.pyType = str if docType[0] == 'X' else int
 
     def genProtoField(self, num:int) -> str:
-        return "\t%s %s = %d;" % ("string" if self.pyType == str else "int32", self.translatedName, num)
+        return "\t{repeated}{type} {name} = {num}; {comment}".format(
+            repeated= "repeated " if self.occ > 1 else "",
+            type= "string" if self.pyType == str else "int32", 
+            name= self.translatedName, 
+            num= num, 
+            comment= "" if self.comment == "" else "//"+self.comment)
+    
+    def getIgnored(self) -> bool:
+        return self.ignored
+
+    def getOcc(self) -> int:
+        return self.occ
 
 class DataType:
     dtname : str
@@ -32,7 +47,7 @@ class DataType:
         self.fields = []
 
     def genProto(self) -> str:
-        fields = "\n".join(map(lambda ifield: ifield[1].genProtoField(ifield[0] + 1), enumerate(self.fields)))
+        fields = "\n".join(map(lambda ifield: ifield[1].genProtoField(ifield[0] + 1), enumerate(filter(lambda f: not f.getIgnored(),self.fields))))
         return 'syntax = "proto3";\nmessage SearchRequest {\n%s\n}' % fields
 
 import pykakasi

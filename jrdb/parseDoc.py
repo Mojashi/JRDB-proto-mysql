@@ -53,16 +53,18 @@ def parseDoc(doc: str, dtname:str) -> DataType:
 
     return dtype
 
+def getDataType(dtname : str, docDir:str = DocDir) -> DataType:
+    with open(docDir + "/" + dtname, "r") as f:
+        return parseDoc(f.read(), dtname)
 
 import os
 def parseAll(docDir:str = DocDir, protoDir : str = ProtoDir):
     os.makedirs(protoDir, exist_ok=True)
 
     for docfname in os.listdir(docDir):
-        with open(docDir + "/" + docfname, "r") as f:
-            dtype = parseDoc(f.read(), docfname)
-            with open(protoDir + "/" + dtype.dtname + ".proto", "w") as protof:
-                protof.write(dtype.genProto())
+        dtype = getDataType(docfname)
+        with open(protoDir + "/" + dtype.dtname + ".proto", "w") as protof:
+            protof.write(dtype.genProto())
 
 
 if __name__ == "__main__":

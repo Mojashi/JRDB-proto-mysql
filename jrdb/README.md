@@ -7,7 +7,7 @@
 ## Requirements
 - python3
 - google-protobuf
-- xjrdb-account
+- jrdb-account
 
 ## Use
 ```sh=
