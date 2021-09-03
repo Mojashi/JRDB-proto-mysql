@@ -1,7 +1,7 @@
 #! python
 import logging
 from typing import List
-from env import DTypeListFlie, DocDir
+from env import DataDir
 from bs4 import BeautifulSoup
 from secret import JRDB_USER_ID,JRDB_PASSWORD
 
@@ -9,7 +9,7 @@ downloadBaseURL = "http://www.jrdb.com/member/datazip/%s/%s_%d.zip"
 listBaseURL = "http://www.jrdb.com/member/datazip/%s/index.html"
 
 def getYearPackDLURL(dtypeName : str, year : int) -> str:
-    return downloadBaseURL % (dtypeName.capitalize(),dtypeName.capitalize(),year)
+    return downloadBaseURL % (dtypeName.capitalize(),dtypeName.upper(),year)
 def getListURL(dtypeName : str) -> str:
     return listBaseURL % dtypeName.capitalize()
 
@@ -35,32 +35,26 @@ def getYearPack(dtypeName : str, year : int) -> bytes:
         url,
         auth=HTTPBasicAuth(JRDB_USER_ID, JRDB_PASSWORD)
     ) 
+    logging.info(resp.status_code)
     c = resp.content
     resp.close()
     return c
 
-def getYearPacks(dtypeName : str) -> bytes:
-    url = getYearPackDLURL(dtypeName, year)
-    logging.info("GET %s" % url)
-    resp = requests.get(
-        url,
-        auth=HTTPBasicAuth(JRDB_USER_ID, JRDB_PASSWORD)
-    ) 
-    c = resp.content
-    resp.close()
-    return c
-
-
+from datetime import datetime
+import zipfile
+import io
 import os
-def getAll(docDir : str = DocDir ,listFile : str = DTypeListFlie):
-    os.makedirs(docDir, exist_ok=True)
+def extractYearPacks(dtypeName : str, dataDir:str = DataDir):
+    os.makedirs(dataDir, exist_ok=True)
+    for year in range(1999,datetime.now().year):
+        z = zipfile.ZipFile(io.BytesIO(getYearPack(dtypeName,year)))
+        z.extractall(dataDir)
 
-    with open(listFile, "r") as f:
-        for dtname in f.readlines():
-            dtname, docpath = dtname.strip().split(",")
-            with open(docDir + "/" + dtname, "w") as docf:
-                docf.write(get(dtname,docpath).decode("shift-jis"))
+def getMissingFile(dtypeName : str, dataDir:str = DataDir):
+    os.makedirs(dataDir, exist_ok=True)
+    files = getList(dtypeName)
+    
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    print(getList("sed"))
+    extractYearPacks("sed")

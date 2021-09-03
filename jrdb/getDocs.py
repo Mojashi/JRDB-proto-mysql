@@ -13,19 +13,24 @@ def get(dtypeName : str, docPath : str = None) -> bytes:
         )
     logging.info("GET %s" % url)
     resp = requests.get(url) 
+    logging.info(resp.status_code)
     c = resp.content
     resp.close()
     return c
 
 import os
+import json
 def getAll(docDir : str = DocDir ,listFile : str = DTypeListFlie):
     os.makedirs(docDir, exist_ok=True)
 
     with open(listFile, "r") as f:
-        for dtname in f.readlines():
-            dtname, docpath = dtname.strip().split(",")
-            with open(docDir + "/" + dtname, "w") as docf:
-                docf.write(get(dtname,docpath).decode("shift-jis"))
+        typeDescs = json.load(f)
+    
+    for typeDesc in typeDescs:
+        dtname = typeDesc["name"]
+        docpath = typeDesc.get("docfile")
+        with open(docDir + "/" + dtname, "w") as docf:
+            docf.write(get(dtname,docpath).decode("shift-jis"))
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
