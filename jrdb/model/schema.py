@@ -25,12 +25,18 @@ class Field:
             self.comment += " repeated:%dtimes" % self.occ
         self.ignored = ignored
         self.translatedName = translate(name)
-        self.pyType = str if docType[0] == 'X' else int
+        if docType[0] == 'X':
+            self.pyType = str
+        elif "." in docType:
+            self.pyType = float
+        else:
+            self.pyType = int
 
     def genProtoField(self, num: int) -> str:
-        return "\t{repeated}{type} {name} = {num}; {comment}".format(
-            repeated="repeated " if self.occ > 1 else "",
-            type="string" if self.pyType == str else "int32",
+        return "\t{repeated} {type} {name} = {num}; {comment}".format(
+            repeated="repeated" if self.occ > 1 else "optional",
+            type="string" if self.pyType == str else (
+                "int32" if self.pyType == int else "float"),
             name=self.translatedName,
             num=num,
             comment="" if self.comment == "" else "//"+self.comment)
