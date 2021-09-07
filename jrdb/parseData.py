@@ -2,7 +2,7 @@
 from utils import getDtypeDataDir
 from model.schema import DataType, Field
 from typing import IO, Union, Optional
-from env import DataDir, ProtoBuildDir
+from env import DataDir, DtypeDescs, ProtoBuildDir
 from parseDoc import getDataType
 import logging
 import glob
@@ -36,22 +36,26 @@ def parseData(ProtoT, dtype: DataType, data: IO):
     def parseRow():
         ret = ProtoT()
         for field in dtype.fields:
-            # logging.debug(field.name)
+            try:
+                # logging.debug(field.name)
 
-            for _ in range(field.occ):
-                s = data.read(field.size)
-                if not s:
-                    return None
-                # logging.debug(s)
+                for _ in range(field.occ):
+                    s = data.read(field.size)
+                    if not s:
+                        return None
+                    # logging.debug(s)
 
-                if not field.ignored:
-                    v = convType(field, s)
-                    if v is None:
-                        continue
-                    if field.occ == 1:
-                        setattr(ret, field.translatedName, v)
-                    else:
-                        getattr(getattr(ret, field.translatedName), "append")(v)
+                    if not field.ignored:
+                        v = convType(field, s)
+                        if field.occ == 1:
+                            if v is None:
+                                continue
+                            setattr(ret, field.translatedName, v)
+                        else:
+                            getattr(getattr(ret, field.translatedName), "append")(
+                                v if v is not None else 0)
+            except Exception as e:
+                raise Exception(field.name) from e
         return ret
 
     while True:
@@ -61,8 +65,9 @@ def parseData(ProtoT, dtype: DataType, data: IO):
 
 
 def parseAllData(dtypeName: str, dataDir: str = DataDir, protoBuildDir: str = ProtoBuildDir):
-    dir = getDtypeDataDir(dtypeName, dataDir)
-    files = sorted(glob.glob(dir + "/*"))
+    parentDtypeName = DtypeDescs[dtypeName.lower()].dataIncludedIn
+    dir = getDtypeDataDir(parentDtypeName, dataDir)
+    files = sorted(glob.glob(dir + "/%s*" % dtypeName.upper()))
 
     fromName = protoBuildDir.replace("/", ".")
     pbModule = __import__(fromName + ".%s_pb2" %
@@ -78,6 +83,7 @@ def parseAllData(dtypeName: str, dataDir: str = DataDir, protoBuildDir: str = Pr
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    parseAllData("sed")
+    for dtypeName in DtypeDescs.keys():
+        parseAllData(dtypeName)
     # import cProfile
     # cProfile.run('parseAllData("sed")', "prof")

@@ -36,7 +36,8 @@ class Field:
         return "\t{repeated} {type} {name} = {num}; {comment}".format(
             repeated="repeated" if self.occ > 1 else "optional",
             type="string" if self.pyType == str else (
-                "int32" if self.pyType == int else "float"),
+                ("int32" if self.size <= 9 else "int64") if self.pyType == int else "float"
+                ),
             name=self.translatedName,
             num=num,
             comment="" if self.comment == "" else "//"+self.comment)
