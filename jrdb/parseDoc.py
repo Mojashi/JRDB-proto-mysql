@@ -31,9 +31,8 @@ def parseDoc(doc: str, dtname: str) -> DataType:
         terms = line.split()
 
         isChild = len(terms) > 0 and line[0].isspace()
-        isParent = len(terms) == 1 and not line[0].isspace()
-        haveOcc = len(terms) >= 5 and terms[1].isdigit(
-        ) and terms[2].isdigit() and terms[4].isdigit()
+        isParent = not line[0].isspace()
+        haveOcc = len(terms) >= 5 and terms[1].isdigit() and terms[2].isdigit() and terms[4].isdigit()
         isRecord = len(terms) >= 4 and (
             haveOcc and terms[1].isdigit() and terms[2].isdigit() and terms[4].isdigit() or
             not haveOcc and terms[1].isdigit() and terms[3].isdigit())
