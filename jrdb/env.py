@@ -32,3 +32,16 @@ DtypeDescs: Mapping[str, DtypeDesc] = {
     "cha": DtypeDesc("cha"),
     "tyb": DtypeDesc("tyb"),
 }
+
+
+KnownFieldTypes = {
+"他データリンク用キー 前走１競走成績キー" : str, 
+"他データリンク用キー 前走２競走成績キー" : str, 
+"他データリンク用キー 前走３競走成績キー" : str,
+"他データリンク用キー 前走４競走成績キー" : str,
+"他データリンク用キー 前走５競走成績キー" : str,
+}
+
+KnownIgnoredFields = set([
+    "走法"
+])

@@ -83,7 +83,8 @@ def parseAllData(dtypeName: str, dataDir: str = DataDir, protoBuildDir: str = Pr
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    for dtypeName in DtypeDescs.keys():
-        parseAllData(dtypeName)
+    # for dtypeName in DtypeDescs.keys():
+    #     parseAllData(dtypeName)
+    parseAllData("kyi")
     # import cProfile
     # cProfile.run('parseAllData("sed")', "prof")

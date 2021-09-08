@@ -1,6 +1,7 @@
 import pykakasi
 from typing import Dict, List, Type
-
+from env import KnownIgnoredFields, KnownFieldTypes
+import re
 
 class Field:
     name: str
@@ -23,10 +24,19 @@ class Field:
         self.comment = name + " " + comment
         if self.occ > 1:
             self.comment += " repeated:%dtimes" % self.occ
-        self.ignored = ignored
+        self.ignored = ignored or name in KnownIgnoredFields
         self.translatedName = translate(name)
-        if docType[0] == 'X':
-            self.pyType = str
+
+        if name in KnownFieldTypes:
+            self.pyType = KnownFieldTypes[name]
+        elif docType[0] == 'X':
+            # 最初のXは符号っぽい
+            if re.fullmatch(r"X[Z9]+", docType):
+                self.pyType = int
+            if re.fullmatch(r"X[Z9]+\.9+", docType):
+                self.pyType = float
+            else:
+                self.pyType = str
         elif "." in docType:
             self.pyType = float
         else:

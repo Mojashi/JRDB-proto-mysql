@@ -104,8 +104,10 @@ def dlMissingFile(dtypeName: str, dataDir: str = DataDir):
     os.makedirs(dir, exist_ok=True)
 
     notFoundListFName = dataDir + "/notFoundList.txt"
-    with open(notFoundListFName, "r") as f:
-        notFoundList = list(map(lambda line: line.strip(), f.readlines()))
+    notFoundList = []
+    if os.path.exists(notFoundListFName):
+        with open(notFoundListFName, "r") as f:
+            notFoundList = list(map(lambda line: line.strip(), f.readlines()))
 
     extractedYear = set()
 
