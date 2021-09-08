@@ -81,8 +81,9 @@ def parseAll(docDir: str = DocDir, protoDir: str = ProtoDir):
 def execProtoc(protoDir: str = ProtoDir, protoBuildDir: str = ProtoBuildDir):
     logging.info("compile .proto")
     os.makedirs(protoBuildDir, exist_ok=True)
-    subprocess.run("protoc --python_out=%s -I%s %s/*.proto" %
-                   (protoBuildDir, protoDir, protoDir), shell=True)
+    subprocess.run("protoc --plugin=../proto-mysql/protoc-gen-mysql"
+                   " --mysql_out=%s --python_out=%s -I%s %s/*.proto" %
+                   (protoBuildDir, protoBuildDir, protoDir, protoDir), shell=True)
 
 
 if __name__ == "__main__":
