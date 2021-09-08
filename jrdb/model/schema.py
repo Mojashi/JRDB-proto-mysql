@@ -119,7 +119,7 @@ def translate(jp: str, endict: Dict[str, str] = {
     "指数": "index", "クラス": "class", "コメント": "comment", "距離": "distance", "コース": "course",
     "タイプ": "type", "フラグ": "flag", "データ": "data",
     "レース": "race", "レースキー": "racekey", "グレード": "grade", "ペース": "pace", "レースペース": "racepace",
-    "コーナー": "corner", "ペースアップ": "paceup", "レースコメント": "racecomment"
+    "コーナー": "corner", "ペースアップ": "paceup", "レースコメント": "racecomment","キー":"key",
 }) -> str:
     for o, n in prechar.items():
         jp = jp.replace(o, n)
