@@ -1,7 +1,12 @@
+from model.conv import convFloatType, convIntTypeDEC, convIntTypeHEX, convSignedFloatType
+from model.conv import convSignedIntTypeDEC, convSignedIntTypeHEX, convStrType
 import pykakasi
-from typing import Dict, List, Type
+from typing import Callable, Dict, List, Optional, Type, Union
 from env import KnownIgnoredFields, KnownFieldTypes
 import re
+
+Convertor = Callable[[bytes], Optional[Union[int, float, str]]]
+
 
 class Field:
     name: str
@@ -33,7 +38,7 @@ class Field:
             # 最初のXは符号っぽい
             if re.fullmatch(r"X[Z9]+", docType):
                 self.pyType = int
-            if re.fullmatch(r"X[Z9]+\.9+", docType):
+            elif re.fullmatch(r"X[Z9]+\.9+", docType):
                 self.pyType = float
             else:
                 self.pyType = str
@@ -58,6 +63,28 @@ class Field:
     def getOcc(self) -> int:
         return self.occ
 
+    def getConvFunc(self) -> Convertor:
+        if self.pyType == str:
+            return convStrType
+        else:
+            if self.docType[0] == "X":
+                if self.pyType == int:
+                    if "F" in self.docType:
+                        return convSignedIntTypeHEX
+                    else:
+                        return convSignedIntTypeDEC
+                if self.pyType == float:
+                    return convSignedFloatType
+            if self.pyType == int:
+                if "F" in self.docType:
+                    return convIntTypeHEX
+                else:
+                    return convIntTypeDEC
+            if self.pyType == float:
+                return convFloatType
+            assert(True)
+            return convStrType
+
 
 class DataType:
     dtname: str
@@ -71,6 +98,9 @@ class DataType:
         fields = "\n".join(map(lambda ifield: ifield[1].genProtoField(
             ifield[0] + 1), enumerate(filter(lambda f: not f.getIgnored(), self.fields))))
         return 'syntax = "proto3";\nmessage %s {\n%s\n}' % (self.dtname.capitalize(), fields)
+
+    def fieldConvertors(self) -> List[Convertor]:
+        return list(map(lambda field: field.getConvFunc(), self.fields))
 
 
 kks = pykakasi.kakasi()
