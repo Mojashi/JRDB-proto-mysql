@@ -1,7 +1,9 @@
+#!python
 # create table
 # add primary index
 # make generated column
-from typing import List, Mapping
+from db.config import TableConfig, TableConfigs
+from typing import List
 import mysql.connector
 from mysql.connector.cursor import CursorBase
 import glob
@@ -28,21 +30,16 @@ def makeTable(cur: CursorBase):
         cur.execute(stat)
 
 
-raceKeyIndex = "idx_raceKey(racekey)"
-raceKeyWithHorseNumIndex = "idx_raceKey(racekey, umaban)"
-raceKeyGeneratedColumn = "racekey INT AS (racekey_ba_code + racekey_nen + racekey_kai + racekey_nichi + racekey_R)"
+def setup(cur: CursorBase, conf: TableConfig):
+    for stat in conf.generatedColumns:
+        cur.execute("ALTER TABLE %s ADD %s", conf.name, stat)
+    cur.execute("ALTER TABLE %s ADD PRIMARY KEY (%s)", conf.name, ",".join(conf.primaryKey))
+    for idxName, cols in conf.indexes:
+        cur.execute("ALTER TABLE %s ADD INDEX %s(%s)", conf.name, idxName, ",".join(cols))
 
 
-def createPrimaryKey(cur: CursorBase, primaryKeys: Mapping[str, str] = {
-    "sed": "idx_"
-}):
-    cur.execute("SHOW TABLES")
-
-    tables = []
-    for (tableName,) in cur:
-        tables.append(tableName)
-
-    for table in tables:
+def removeTables(cur: CursorBase):
+    pass    
 
 
 if __name__ == "__main__":
@@ -50,4 +47,5 @@ if __name__ == "__main__":
     conn = getConn()
     cur = conn.cursor()
     makeTable(cur)
-    createPrimaryKey(cur)
+    for conf in TableConfigs:
+        setup(cur, conf)

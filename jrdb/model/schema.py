@@ -2,15 +2,22 @@ from model.conv import convFloatType, convIntTypeDEC, convIntTypeHEX, convSigned
 from model.conv import convSignedIntTypeDEC, convSignedIntTypeHEX, convStrType
 import pykakasi
 from typing import Callable, Dict, List, Optional, Type, Union
-from env import KnownIgnoredFields, KnownFieldTypes
+from env import KnownFieldParentNameAlias, KnownIgnoredFieldFullName,\
+     KnownIgnoredFieldName, KnownFieldTypes
 import re
 
+
 Convertor = Callable[[bytes], Optional[Union[int, float, str]]]
+MAX_FIELD_NAME_LENGTH = 64
 
 
 class Field:
-    name: str
+    originalParentName: str
+    originalName: str
+    originalFullName: str
+    fullName: str
     translatedName: str
+
     occ: int
     size: int
     docType: str
@@ -20,17 +27,30 @@ class Field:
     ignored: bool
 
     def __init__(self, name: str, occ: int, size: int, docType: str, pos: int,
-                 comment: str = "", ignored=False) -> None:
-        self.name = name
+                 parentName: str = "", comment: str = "", ignored=False) -> None:
+        self.originalName = name
+        self.originalParentName = parentName
+
+        palias = KnownFieldParentNameAlias.get(parentName, parentName)
+        self.fullName = palias + " " + name
+        self.originalFullName = parentName + " " + name
+
         self.size = size
         self.occ = occ
         self.docType = docType
         self.pos = pos
-        self.comment = name + " " + comment
+        self.comment = self.originalParentName + ">" + self.originalName + " " + comment
+
         if self.occ > 1:
             self.comment += " repeated:%dtimes" % self.occ
-        self.ignored = ignored or name in KnownIgnoredFields
-        self.translatedName = translate(name)
+
+        self.ignored = ignored or\
+            self.originalFullName in KnownIgnoredFieldFullName or\
+            self.originalName in KnownIgnoredFieldName
+
+        self.translatedName = translate(self.fullName)
+        if len(self.translatedName) > MAX_FIELD_NAME_LENGTH:
+            raise Exception("field name is too long!")
 
         if name in KnownFieldTypes:
             self.pyType = KnownFieldTypes[name]
@@ -51,8 +71,9 @@ class Field:
         return "\t{repeated} {type} {name} = {num}; {comment}".format(
             repeated="repeated" if self.occ > 1 else "optional",
             type="string" if self.pyType == str else (
-                ("int32" if self.size <= 9 else "int64") if self.pyType == int else "float"
-                ),
+                ("int32" if self.size <=
+                 9 else "int64") if self.pyType == int else "float"
+            ),
             name=self.translatedName,
             num=num,
             comment="" if self.comment == "" else "//"+self.comment)
@@ -119,7 +140,7 @@ def translate(jp: str, endict: Dict[str, str] = {
     "指数": "index", "クラス": "class", "コメント": "comment", "距離": "distance", "コース": "course",
     "タイプ": "type", "フラグ": "flag", "データ": "data",
     "レース": "race", "レースキー": "racekey", "グレード": "grade", "ペース": "pace", "レースペース": "racepace",
-    "コーナー": "corner", "ペースアップ": "paceup", "レースコメント": "racecomment","キー":"key",
+    "コーナー": "corner", "ペースアップ": "paceup", "レースコメント": "racecomment", "キー": "key",
 }) -> str:
     for o, n in prechar.items():
         jp = jp.replace(o, n)

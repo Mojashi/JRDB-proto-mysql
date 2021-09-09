@@ -32,7 +32,8 @@ def parseDoc(doc: str, dtname: str) -> DataType:
 
         isChild = len(terms) > 0 and line[0].isspace()
         isParent = not line[0].isspace()
-        haveOcc = len(terms) >= 5 and terms[1].isdigit() and terms[2].isdigit() and terms[4].isdigit()
+        haveOcc = len(terms) >= 5 and terms[1].isdigit() and\
+            terms[2].isdigit() and terms[4].isdigit()
         isRecord = len(terms) >= 4 and (
             haveOcc and terms[1].isdigit() and terms[2].isdigit() and terms[4].isdigit() or
             not haveOcc and terms[1].isdigit() and terms[3].isdigit())
@@ -43,18 +44,30 @@ def parseDoc(doc: str, dtname: str) -> DataType:
 
         if isRecord:
             name = terms[0]
-            if isChild:
-                name = parent+' '+name
-            else:
-                parent = ""
 
             if haveOcc:
-                field = Field(name, int(terms[1]), int(terms[2]), terms[3], int(
-                    terms[4]), terms[5] if len(terms) >= 6 else "", terms[0] in ["改行", "予備"])
+                field = Field(
+                    name=name,
+                    occ=int(terms[1]),
+                    size=int(terms[2]),
+                    docType=terms[3],
+                    pos=int(terms[4]),
+                    parentName=parent,
+                    comment=terms[5] if len(terms) >= 6 else "")
             else:
-                field = Field(name, 1, int(terms[1]), terms[2], int(
-                    terms[3]), terms[4] if len(terms) >= 5 else "", terms[0] in ["改行", "予備"])
+                field = Field(
+                    name=name,
+                    occ=1,
+                    size=int(terms[1]),
+                    docType=terms[2],
+                    pos=int(terms[3]),
+                    parentName=parent,
+                    comment=terms[4] if len(terms) >= 5 else "")
+
             dtype.fields.append(field)
+
+            if not isChild:
+                parent = ""
 
         if isParent:
             parent = terms[0]
