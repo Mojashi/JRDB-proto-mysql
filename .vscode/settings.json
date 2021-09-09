@@ -5,4 +5,11 @@
     "python.linting.mypyEnabled": true,
     "python.formatting.autopep8Path":"autopep8",
     "python.linting.flake8Args": ["--max-line-length", "95"],
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/.hg/store/**": true,
+        "jrdb/data/**": true,
+    }
 }
