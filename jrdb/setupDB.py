@@ -9,15 +9,24 @@ from mysql.connector.cursor import CursorBase
 import glob
 import logging
 from env import ProtoBuildDir
-from secret import DB_USER, DB_HOST, DB_NAME, DB_PASS
+from secret import DB_USER, DB_HOST, DB_NAME, DB_PASS, UNIXSOCKET
 
 
 def getConn():
-    return mysql.connector.connect(
-        user=DB_USER,
-        host=DB_HOST,
-        database=DB_NAME,
-        password=DB_PASS)
+    if UNIXSOCKET == "":
+        return mysql.connector.connect(
+            user=DB_USER,
+            host=DB_HOST,
+            database=DB_NAME,
+            password=DB_PASS,
+            charset='utf8')
+    else:
+        return mysql.connector.connect(
+            user=DB_USER,
+            unix_socket=UNIXSOCKET,
+            database=DB_NAME,
+            password=DB_PASS,
+            charset='utf8')
 
 
 def makeTable(cur: CursorBase):

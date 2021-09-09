@@ -125,7 +125,7 @@ class DataType:
     def genProto(self) -> str:
         fields = "\n".join(map(lambda ifield: ifield[1].genProtoField(
             ifield[0] + 1), enumerate(filter(lambda f: not f.getIgnored(), self.fields))))
-        return 'syntax = "proto3";\nimport ".mySQLOptions.proto";\nmessage %s {\n%s\n}' %\
+        return 'syntax = "proto3";\nimport "mySQLOptions.proto";\nmessage %s {\n%s\n}' %\
             (self.dtname.capitalize(), fields)
 
     def fieldConvertors(self) -> List[Convertor]:

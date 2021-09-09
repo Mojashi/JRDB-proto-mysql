@@ -21,7 +21,7 @@ def parseData(ProtoT, dtype: DataType,
 
                 for _ in range(field.occ):
                     s = data.read(field.size)
-                    if field.name == "改行" and s != b"\r\n":
+                    if field.originalName == "改行" and s != b"\r\n":
                         raise Exception("invalid format!!!")
 
                     if not s:
@@ -38,7 +38,7 @@ def parseData(ProtoT, dtype: DataType,
                             getattr(getattr(ret, field.translatedName), "append")(
                                 v if v is not None else 0)
             except Exception as e:
-                raise Exception(field.name) from e
+                raise Exception(field.originalFullName) from e
         return ret
 
     rows = []
@@ -64,19 +64,28 @@ def parseAllData(cur: CursorBase, dtypeName: str,
     fieldConvertors = dtype.fieldConvertors()
     ProtoT = getattr(pbModule, dtype.dtname.capitalize())
 
-    sqlModule = __import__(fromName + ".%s_proto_helper" %
+    sqlModule = __import__(fromName + ".%s_sqlhelper" %
                            dtypeName, fromlist=[fromName])
     insertConvFunc = getattr(sqlModule, "conv%sProtoClassToData" % dtypeName.capitalize())
+    columnList = getattr(sqlModule, "get%sColumnNames" % dtypeName.capitalize())()
 
+    rows = []
     for fname in files:
         print(fname)
-        rows = []
         with open(fname, "rb", 100000) as f:
             rows.extend(parseData(ProtoT, dtype, fieldConvertors, f))
 
-        values = list(map(lambda row: insertConvFunc(row), rows))
-        holders = r"%s,"*len(values[0])
-        cur.executemany(f"INSERT INTO {dtypeName.capitalize()} VALUES ({holders})", values)
+        # print(len(values[0]), values[0])
+
+        if len(rows) > 1000:
+            values = list(map(lambda row: insertConvFunc(row), rows))
+            holders = ",".join([r"%s" for _ in range(len(values[0]))])
+            cur.executemany(f"INSERT INTO {dtypeName.capitalize()} "
+                            f"({columnList}) VALUES ({holders})", values)
+            del rows
+            rows = []
+
+    cur.commit()
 
 
 if __name__ == "__main__":

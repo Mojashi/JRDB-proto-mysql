@@ -1,6 +1,9 @@
 __pycache__/
 model/__pycache__/
 doc/
-proto/
+proto/*
+!proto/build
+proto/build/*
+!proto/build/__init__.py
 secret.py
 data/
