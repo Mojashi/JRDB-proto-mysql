@@ -1,7 +1,6 @@
 
 
 from typing import Optional
-import logging
 
 
 def convStrType(s: bytes) -> str:
@@ -16,8 +15,7 @@ def convSignedIntTypeDEC(s: bytes) -> Optional[int]:
         if all(ch == 0x20 for ch in s):
             return None
         else:
-            logging.warning("failed to parse bytes:%s into signed int", s.decode("cp932"))
-            return None
+            raise Exception("failed to parse bytes:%s into signed int", s.decode("cp932"))
 
 
 def convSignedIntTypeHEX(s: bytes) -> Optional[int]:
@@ -28,8 +26,7 @@ def convSignedIntTypeHEX(s: bytes) -> Optional[int]:
         if all(ch == 0x20 for ch in s):
             return None
         else:
-            logging.warning("failed to parse bytes:%s into signed hex int", s.decode("cp932"))
-            return None
+            raise Exception("failed to parse bytes:%s into signed hex int", s.decode("cp932"))
 
 
 def convIntTypeDEC(s: bytes) -> Optional[int]:
@@ -39,8 +36,7 @@ def convIntTypeDEC(s: bytes) -> Optional[int]:
         if all(ch == 0x20 for ch in s):
             return None
         else:
-            logging.warning("failed to parse bytes:%s into int", s.decode("cp932"))
-            return None
+            raise Exception("failed to parse bytes:%s into int", s.decode("cp932"))
 
 
 def convIntTypeHEX(s: bytes) -> Optional[int]:
@@ -50,8 +46,7 @@ def convIntTypeHEX(s: bytes) -> Optional[int]:
         if all(ch == 0x20 for ch in s):
             return None
         else:
-            logging.warning("failed to parse bytes:%s into hex int", s.decode("cp932"))
-            return None
+            raise Exception("failed to parse bytes:%s into hex int", s.decode("cp932"))
 
 
 def convSignedFloatType(s: bytes) -> Optional[float]:
@@ -62,8 +57,7 @@ def convSignedFloatType(s: bytes) -> Optional[float]:
         if all(ch == 0x20 for ch in s):
             return None
         else:
-            logging.warning("failed to parse bytes:%s into hex int", s.decode("cp932"))
-            return None
+            raise Exception("failed to parse bytes:%s into hex int", s.decode("cp932"))
 
 
 def convFloatType(s: bytes) -> Optional[float]:
@@ -73,5 +67,4 @@ def convFloatType(s: bytes) -> Optional[float]:
         if all(ch == 0x20 for ch in s):
             return None
         else:
-            logging.warning("failed to parse bytes:%s into hex int", s.decode("cp932"))
-            return None
+            raise Exception("failed to parse bytes:%s into hex int", s.decode("cp932"))

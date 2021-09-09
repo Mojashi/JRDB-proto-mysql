@@ -9,6 +9,7 @@ from env import DataDir, DtypeDescs, ProtoBuildDir
 from parseDoc import getDataType
 import logging
 import glob
+import sys
 
 
 def parseData(ProtoT, dtype: DataType,
@@ -18,19 +19,21 @@ def parseData(ProtoT, dtype: DataType,
         ret = ProtoT()
         for field, convType in zip(dtype.fields, fieldConvertors):
             try:
-                # logging.debug(field.name)
-
                 for _ in range(field.occ):
                     s = data.read(field.size)
                     if field.originalName == "改行" and s != b"\r\n":
                         raise Exception("invalid format!!!")
-
                     if not s:
                         return None
-                    # logging.debug(s)
-
+                
                     if not field.ignored:
-                        v = convType(s)
+                        try:
+                            v = convType(s)
+                        except Exception as e:
+                            logging.error(e.args)
+                            logging.error("field: " + field.originalFullName)
+                            v = None
+
                         if field.occ == 1:
                             if v is None:
                                 continue
@@ -78,7 +81,7 @@ def parseAllData(cur: CursorBase, dtypeName: str,
 
         # print(len(values[0]), values[0])
 
-        if len(rows) > 100:
+        if len(rows) > 10000:
             try:
                 values = list(map(lambda row: insertConvFunc(row), rows))
                 holders = ",".join([r"%s" for _ in range(len(values[0]))])
@@ -93,14 +96,31 @@ def parseAllData(cur: CursorBase, dtypeName: str,
                 raise e
 
 
+def checkEmpty(cur: CursorBase, tableName: str) -> bool:
+    cur.execute(f"SELECT 1 from {tableName} limit 1")
+    for _ in cur:
+        return False
+    return True
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     conn = getConn()
     cur = conn.cursor()
     conn.autocommit = False
-    # for dtypeName in DtypeDescs.keys():
-    #     parseAllData(cur, dtypeName)
-    #     conn.commit()
-    parseAllData(cur, "srb")
+
+    if len(sys.argv) > 1:
+        if sys.argv[1].lower() not in DtypeDescs.keys():
+            logging.error("unknown dtype")
+            exit(1)
+        parseAllData(cur, sys.argv[1])
+        conn.commit()
+    else:
+        for dtypeName in DtypeDescs.keys():
+            if not checkEmpty(cur, dtypeName.capitalize()):
+                continue
+            parseAllData(cur, dtypeName)
+            conn.commit()
+    # parseAllData(cur, "srb")
     # import cProfile
     # cProfile.run('parseAllData("sed")', "prof")
