@@ -34,6 +34,7 @@ DtypeDescs: Mapping[str, DtypeDesc] = {
 }
 
 
+# 下で設定するaliasをかける前の名前で指定
 KnownFieldTypes = {
     "他データリンク用キー 前走１競走成績キー": str,
     "他データリンク用キー 前走２競走成績キー": str,
@@ -47,6 +48,18 @@ KnownFieldTypes = {
     "他データリンク用キー 前走５レースキー": str,
 }
 
-KnownIgnoredFields = set([
-    "走法"
+# 下で設定するaliasをかける前の名前で指定
+KnownIgnoredFieldFullName = set([
+    "走法",
 ])
+KnownIgnoredFieldName = set([
+    "改行",
+    "予備",
+])
+
+
+# 親項目の名前を置き換え
+KnownFieldParentNameAlias = {
+    "競走馬該当条件別着度数集計": "statistics",
+    "該当条件別着度数": "statistics",
+}
