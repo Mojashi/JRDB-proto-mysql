@@ -27,18 +27,20 @@ def makeTable(cur: CursorBase):
             statements.append(f.read())
 
     for stat in statements:
+        logging.debug(stat)
         cur.execute(stat)
 
 
 def setup(cur: CursorBase, conf: TableConfig):
+    logging.info("setup " + conf.name)
     for stat in conf.generatedColumns:
-        logging.info("generatedColumn " + stat)
+        logging.debug("generatedColumn " + stat)
         cur.execute(f"ALTER TABLE {conf.name} ADD {stat}")
     stat = ",".join(conf.primaryKey)
     cur.execute(f"ALTER TABLE {conf.name} ADD PRIMARY KEY ({stat})")
     for idxName, cols in conf.indexes:
         stat = ",".join(cols)
-        logging.info("addIndex " + idxName)
+        logging.debug("addIndex " + idxName)
         cur.execute(f"ALTER TABLE {conf.name} ADD INDEX {idxName}({stat})")
 
 

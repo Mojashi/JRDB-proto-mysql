@@ -4,7 +4,7 @@
 import subprocess
 import os
 from typing import List
-from env import DocDir, ProtoBuildDir, ProtoDir
+from env import DocDir, ProtoBuildDir, ProtoDir, ProtoMySQLDir
 from model.schema import DataType, Field
 import logging
 
@@ -36,7 +36,7 @@ def parseDoc(doc: str, dtname: str) -> DataType:
         isRecord = len(terms) >= 4 and (
             haveOcc and terms[1].isdigit() and terms[2].isdigit() and terms[4].isdigit() or
             not haveOcc and terms[1].isdigit() and terms[3].isdigit())
-        isParent = not line[0].isspace() 
+        isParent = not line[0].isspace()
 
         logging.debug(line)
         logging.debug(terms)
@@ -90,12 +90,16 @@ def parseAll(docDir: str = DocDir, protoDir: str = ProtoDir):
             protof.write(dtype.genProto())
 
 
-def execProtoc(protoDir: str = ProtoDir, protoBuildDir: str = ProtoBuildDir):
+def execProtoc(protoDir: str = ProtoDir,
+               protoBuildDir: str = ProtoBuildDir,
+               protoMySQLDir: str = ProtoMySQLDir):
     logging.info("compile .proto")
     os.makedirs(protoBuildDir, exist_ok=True)
-    subprocess.run("protoc --plugin=../proto-mysql/protoc-gen-mysql"
-                   " --mysql_out=%s --python_out=%s -I%s %s/*.proto" %
-                   (protoBuildDir, protoBuildDir, protoDir, protoDir), shell=True)
+    subprocess.run(f"protoc --plugin={protoMySQLDir}/protoc-gen-mysql "
+                   f"--mysql_out={protoBuildDir} --python_out={protoBuildDir} "
+                   f"-I{protoMySQLDir} -I{protoDir} {protoDir}/*.proto", shell=True)
+    subprocess.run(f"protoc --python_out={protoBuildDir} "
+                   f"-I{protoMySQLDir} {protoMySQLDir}/mySQLOptions.proto", shell=True)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ import re
 
 Convertor = Callable[[bytes], Optional[Union[int, float, str]]]
 MAX_FIELD_NAME_LENGTH = 64
+MAX_CHAR_LENGTH = 255
 
 
 class Field:
@@ -72,7 +73,7 @@ class Field:
             self.pyType = int
 
     def genProtoField(self, num: int) -> str:
-        return "\t{repeated} {type} {name} = {num}; {comment}".format(
+        return "\t{repeated} {type} {name} = {num} {DBType}; {comment}".format(
             repeated="repeated" if self.occ > 1 else "optional",
             type="string" if self.pyType == str else (
                 ("int32" if self.size <=
@@ -80,6 +81,8 @@ class Field:
             ),
             name=self.translatedName,
             num=num,
+            DBType=('[(mySQLType)={typeName:"CHAR", args:["%d"]}]' % self.size)
+            if self.pyType == str and self.size <= MAX_CHAR_LENGTH else "",
             comment="" if self.comment == "" else "//"+self.comment)
 
     def getIgnored(self) -> bool:
@@ -122,7 +125,8 @@ class DataType:
     def genProto(self) -> str:
         fields = "\n".join(map(lambda ifield: ifield[1].genProtoField(
             ifield[0] + 1), enumerate(filter(lambda f: not f.getIgnored(), self.fields))))
-        return 'syntax = "proto3";\nmessage %s {\n%s\n}' % (self.dtname.capitalize(), fields)
+        return 'syntax = "proto3";\nimport ".mySQLOptions.proto";\nmessage %s {\n%s\n}' %\
+            (self.dtname.capitalize(), fields)
 
     def fieldConvertors(self) -> List[Convertor]:
         return list(map(lambda field: field.getConvFunc(), self.fields))
