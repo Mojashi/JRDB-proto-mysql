@@ -30,6 +30,7 @@ def makeTable(cur: CursorBase):
 
 raceKeyIndex = "idx_raceKey(racekey)"
 raceKeyWithHorseNumIndex = "idx_raceKey(racekey, umaban)"
+raceKeyGeneratedColumn = "racekey INT AS (racekey_ba_code + racekey_nen + racekey_kai + racekey_nichi + racekey_R)"
 
 
 def createPrimaryKey(cur: CursorBase, primaryKeys: Mapping[str, str] = {
