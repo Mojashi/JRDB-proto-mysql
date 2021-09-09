@@ -1,4 +1,5 @@
 #! python
+from google.protobuf import json_format
 from mysql.connector.cursor import CursorBase
 from setupDB import getConn
 from utils import getDtypeDataDir
@@ -55,7 +56,6 @@ def parseAllData(cur: CursorBase, dtypeName: str,
                  dataDir: str = DataDir, protoBuildDir: str = ProtoBuildDir):
     parentDtypeName = DtypeDescs[dtypeName.lower()].dataIncludedIn
     dir = getDtypeDataDir(parentDtypeName, dataDir)
-    files = sorted(glob.glob(dir + "/%s*" % dtypeName.upper()))
 
     fromName = protoBuildDir.replace("/", ".")
     pbModule = __import__(fromName + ".%s_pb2" %
@@ -70,30 +70,37 @@ def parseAllData(cur: CursorBase, dtypeName: str,
     columnList = getattr(sqlModule, "get%sColumnNames" % dtypeName.capitalize())()
 
     rows = []
+    files = sorted(glob.glob(dir + "/%s*.txt" % dtypeName.upper()))
     for fname in files:
-        print(fname)
+        logging.info(fname)
         with open(fname, "rb", 100000) as f:
             rows.extend(parseData(ProtoT, dtype, fieldConvertors, f))
 
         # print(len(values[0]), values[0])
 
-        if len(rows) > 1000:
-            values = list(map(lambda row: insertConvFunc(row), rows))
-            holders = ",".join([r"%s" for _ in range(len(values[0]))])
-            cur.executemany(f"INSERT INTO {dtypeName.capitalize()} "
-                            f"({columnList}) VALUES ({holders})", values)
-            del rows
-            rows = []
-
-    cur.commit()
+        if len(rows) > 100:
+            try:
+                values = list(map(lambda row: insertConvFunc(row), rows))
+                holders = ",".join([r"%s" for _ in range(len(values[0]))])
+                cur.executemany(f"INSERT INTO {dtypeName.capitalize()} "
+                                f"({columnList}) VALUES ({holders})", values)
+                del rows
+                rows = []
+            except Exception as e:
+                with open("dump.log", "w") as f:
+                    for r in rows:
+                        f.write(json_format.MessageToJson(r))
+                raise e
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    # for dtypeName in DtypeDescs.keys():
-    #     parseAllData(dtypeName)
     conn = getConn()
     cur = conn.cursor()
-    parseAllData(cur, "kyi")
+    conn.autocommit = False
+    # for dtypeName in DtypeDescs.keys():
+    #     parseAllData(cur, dtypeName)
+    #     conn.commit()
+    parseAllData(cur, "srb")
     # import cProfile
     # cProfile.run('parseAllData("sed")', "prof")

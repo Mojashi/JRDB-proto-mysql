@@ -17,7 +17,7 @@ raceKeyWithHorseNumColumns = ["racekey", "umaban"]
 kyousouseisekiKeyColumns = ["kyousouseisekikey"]
 
 raceKeyGeneratedColumn = "racekey INT AS"\
-    " (racekey_nen*1000000 + racekey_kai*100000 + "\
+    " (racekey_nen*10000000 + racekey_kai*1000000 + "\
     "racekey_nichi*10000 + racekey_R*100 + racekey_ba_code) "\
     "STORED NOT NULL"
 kyousouseisekiKeyGeneratedColumn = "kyousouseisekikey AS "\
