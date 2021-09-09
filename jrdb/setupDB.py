@@ -32,20 +32,31 @@ def makeTable(cur: CursorBase):
 
 def setup(cur: CursorBase, conf: TableConfig):
     for stat in conf.generatedColumns:
-        cur.execute("ALTER TABLE %s ADD %s", conf.name, stat)
-    cur.execute("ALTER TABLE %s ADD PRIMARY KEY (%s)", conf.name, ",".join(conf.primaryKey))
+        logging.info("generatedColumn " + stat)
+        cur.execute(f"ALTER TABLE {conf.name} ADD {stat}")
+    stat = ",".join(conf.primaryKey)
+    cur.execute(f"ALTER TABLE {conf.name} ADD PRIMARY KEY ({stat})")
     for idxName, cols in conf.indexes:
-        cur.execute("ALTER TABLE %s ADD INDEX %s(%s)", conf.name, idxName, ",".join(cols))
+        stat = ",".join(cols)
+        logging.info("addIndex " + idxName)
+        cur.execute(f"ALTER TABLE {conf.name} ADD INDEX {idxName}({stat})")
 
 
 def removeTables(cur: CursorBase):
-    pass    
+    cur.execute("SHOW TABLES")
+    tables = []
+    for table in cur:
+        tables.append(table)
+    for (table,) in tables:
+        logging.info("remove " + table)
+        cur.execute("DROP TABLE %s" % table)
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     conn = getConn()
     cur = conn.cursor()
+    removeTables(cur)
     makeTable(cur)
-    for conf in TableConfigs:
+    for conf in TableConfigs.values():
         setup(cur, conf)

@@ -26,13 +26,13 @@ kyousouseisekiKeyGeneratedColumn = "kyousouseisekikey AS "\
 
 
 TableConfigs = {
-    "bac": TableConfig("bac", RaceKeyColumns, [raceKeyGeneratedColumn], []),
-    "cha": TableConfig("cha", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
-    "cyb": TableConfig("cyb", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
-    "kka": TableConfig("kka", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
-    "kyi": TableConfig("kyi", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
-    "oz": TableConfig("oz", RaceKeyColumns, [raceKeyGeneratedColumn], []),
-    "sed": TableConfig("sed", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
-    "tyb": TableConfig("tyb", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
-    "ukc": TableConfig("ukc", ["kettou_tourokubangou"], [raceKeyGeneratedColumn], []),
+    "bac": TableConfig("Bac", RaceKeyColumns, [raceKeyGeneratedColumn], []),
+    "cha": TableConfig("Cha", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
+    "cyb": TableConfig("Cyb", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
+    "kka": TableConfig("Kka", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
+    "kyi": TableConfig("Kyi", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
+    "oz": TableConfig("Oz", RaceKeyColumns, [raceKeyGeneratedColumn], []),
+    "sed": TableConfig("Sed", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
+    "tyb": TableConfig("Tyb", raceKeyWithHorseNumColumns, [raceKeyGeneratedColumn], []),
+    "ukc": TableConfig("Ukc", ["kettou_tourokubangou"], [], []),
 }

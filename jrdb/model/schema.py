@@ -31,9 +31,13 @@ class Field:
         self.originalName = name
         self.originalParentName = parentName
 
-        palias = KnownFieldParentNameAlias.get(parentName, parentName)
-        self.fullName = palias + " " + name
-        self.originalFullName = parentName + " " + name
+        if parentName != "":
+            palias = KnownFieldParentNameAlias.get(parentName, parentName)
+            self.fullName = palias + " " + name
+            self.originalFullName = parentName + " " + name
+        else:
+            self.fullName = name
+            self.originalFullName = name
 
         self.size = size
         self.occ = occ
