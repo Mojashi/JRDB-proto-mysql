@@ -1,4 +1,3 @@
-from os import name
 from typing import List, Tuple
 from dataclasses import dataclass, field
 
