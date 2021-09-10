@@ -17,7 +17,7 @@ create database jrdb
 create user jrdb@localhost
 grant all on jrdb.* to jrdb@localhost
 ```
-4. create secret.py
+2. create secret.py
 ```python=
 JRDB_USER_ID = "YOUR JRDB USERID"
 JRDB_PASSWORD = "YOUR JRDB PASSWORD"
@@ -28,7 +28,7 @@ DB_PASS = ""
 UNIXSOCKET = "/var/run/mysqld/mysqld.sock"
 ```
 
-4. run
+3. run
 ```sh=
 make run
 ```
