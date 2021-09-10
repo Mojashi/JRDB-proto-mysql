@@ -10,7 +10,18 @@
 - jrdb-account
 
 ## Use
+1. create secret.py
+```python=
+JRDB_USER_ID = "YOUR JRDB USERID"
+JRDB_PASSWORD = "YOUR JRDB PASSWORD"
+DB_USER = "jrdb"
+DB_HOST = "localhost"
+DB_NAME = "jrdb"
+DB_PASS = ""
+UNIXSOCKET = "/var/run/mysqld/mysqld.sock"
+```
+
+2. run
 ```sh=
-./getDocs.py  # fetch JRDB-docs 
-./parseDoc.py # gen .proto files
+make run
 ```
