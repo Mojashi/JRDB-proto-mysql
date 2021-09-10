@@ -57,8 +57,12 @@ class Field:
         if len(self.translatedName) > MAX_FIELD_NAME_LENGTH:
             raise Exception("field name is too long!")
 
-        if self.originalFullName in KnownFieldTypes:
-            self.pyType = KnownFieldTypes[self.originalFullName]
+        cand = None
+        for ex, t in KnownFieldTypes.items():
+            if re.fullmatch(ex, self.originalFullName):
+                cand = t
+        if cand is not None:
+            self.pyType = cand
         elif docType[0] == 'X':
             # 最初のXは符号っぽい
             if re.fullmatch(r"X[Z9]+", docType):

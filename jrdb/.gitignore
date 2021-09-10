@@ -7,3 +7,4 @@ proto/build/*
 !proto/build/__init__.py
 secret.py
 data/
+dump.log

@@ -1,4 +1,5 @@
 #! python
+from db.config import TableConfigs
 from google.protobuf import json_format
 from mysql.connector.cursor import CursorBase
 from setupDB import getConn
@@ -72,8 +73,12 @@ def parseAllData(cur: CursorBase, dtypeName: str,
     insertConvFunc = getattr(sqlModule, "conv%sProtoClassToData" % dtypeName.capitalize())
     columnList = getattr(sqlModule, "get%sColumnNames" % dtypeName.capitalize())()
 
+    conf = TableConfigs[dtypeName]
+    ignore = "IGNORE" if conf.ignoreDuplicate else ""
+
     rows = []
     files = sorted(glob.glob(dir + "/%s*.txt" % dtypeName.upper()))
+
     for fname in files:
         logging.info(fname)
         with open(fname, "rb", 100000) as f:
@@ -85,7 +90,7 @@ def parseAllData(cur: CursorBase, dtypeName: str,
             try:
                 values = list(map(lambda row: insertConvFunc(row), rows))
                 holders = ",".join([r"%s" for _ in range(len(values[0]))])
-                cur.executemany(f"INSERT INTO {dtypeName.capitalize()} "
+                cur.executemany(f"INSERT {ignore} INTO {dtypeName.capitalize()} "
                                 f"({columnList}) VALUES ({holders})", values)
                 del rows
                 rows = []
@@ -105,22 +110,22 @@ def checkEmpty(cur: CursorBase, tableName: str) -> bool:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    conn = getConn()
-    cur = conn.cursor()
-    conn.autocommit = False
+    with getConn() as conn:
+        conn.autocommit = False
+        cur = conn.cursor()
 
-    if len(sys.argv) > 1:
-        if sys.argv[1].lower() not in DtypeDescs.keys():
-            logging.error("unknown dtype")
-            exit(1)
-        parseAllData(cur, sys.argv[1])
-        conn.commit()
-    else:
-        for dtypeName in DtypeDescs.keys():
-            if not checkEmpty(cur, dtypeName.capitalize()):
-                continue
-            parseAllData(cur, dtypeName)
+        if len(sys.argv) > 1:
+            if sys.argv[1].lower() not in DtypeDescs.keys():
+                logging.error("unknown dtype")
+                exit(1)
+            parseAllData(cur, sys.argv[1])
             conn.commit()
+        else:
+            for dtypeName in DtypeDescs.keys():
+                if not checkEmpty(cur, dtypeName.capitalize()):
+                    continue
+                parseAllData(cur, dtypeName)
+                conn.commit()
     # parseAllData(cur, "srb")
     # import cProfile
     # cProfile.run('parseAllData("sed")', "prof")
