@@ -10,7 +10,7 @@
 - google-protobuf
 - jrdb-account
 
-## Use
+## Usage
 1. create secret.py
 ```python=
 JRDB_USER_ID = "YOUR JRDB USERID"
