@@ -2,7 +2,8 @@
 
 1. fetch JRDB docs and data.
 2. generate .proto files for each JRDB-doc.
-3. ~~convert JRDB data into protobuf format.~~  UPCOMING!
+3. convert JRDB data into protobuf format.
+4. insert into mysql
 
 ## Requirements
 - python3
