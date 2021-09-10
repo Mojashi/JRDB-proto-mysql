@@ -96,7 +96,7 @@ def execProtoc(protoDir: str = ProtoDir,
     logging.info("compile .proto")
     os.makedirs(protoBuildDir, exist_ok=True)
     subprocess.run(f"protoc --plugin={protoMySQLDir}/protoc-gen-mysql "
-                   f"--mysql_out={protoBuildDir} --python_out={protoBuildDir} "
+                   f"--mysql_out={protoBuildDir} --cpp_out={protoBuildDir} --python_out={protoBuildDir} "
                    f"-I{protoMySQLDir} -I{protoDir} {protoDir}/*.proto", shell=True)
     subprocess.run(f"protoc --python_out={protoBuildDir} "
                    f"-I{protoMySQLDir} {protoMySQLDir}/mySQLOptions.proto", shell=True)
