@@ -5,8 +5,7 @@ DocDir = "doc"
 DataDir = "data"
 ProtoDir = "proto"
 ProtoBuildDir = ProtoDir + "/build"
-DTypeListFlie = "typelist.json"
-ProtoMySQLDir = "../proto-mysql"
+ProtoMySQLDir = "proto-mysql"
 
 
 class DtypeDesc:

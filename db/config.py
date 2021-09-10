@@ -42,6 +42,8 @@ TableConfigs = {
                       generatedColumns=[raceKeyGeneratedColumn]),
     "sed": TableConfig(name="Sed", primaryKey=raceKeyWithHorseNumColumns,
                        generatedColumns=[raceKeyGeneratedColumn]),
+    "srb": TableConfig(name="Srb", primaryKey=RaceKeyColumns,
+                       generatedColumns=[raceKeyGeneratedColumn]),
     "tyb": TableConfig(name="Tyb", primaryKey=raceKeyWithHorseNumColumns,
                        generatedColumns=[raceKeyGeneratedColumn], ignoreDuplicate=True),
     "ukc": TableConfig(name="Ukc", primaryKey=["kettou_tourokubangou"],

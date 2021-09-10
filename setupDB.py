@@ -3,10 +3,8 @@
 # add primary index
 # make generated column
 from db.config import TableConfig, TableConfigs
-from typing import List
 import mysql.connector
 from mysql.connector.cursor import CursorBase
-import glob
 import logging
 from env import DtypeDescs, ProtoBuildDir
 from secret import DB_USER, DB_HOST, DB_NAME, DB_PASS, UNIXSOCKET
@@ -51,8 +49,11 @@ def setup(cur: CursorBase, conf: TableConfig):
 
 
 def removeTable(cur: CursorBase, table: str):
-    logging.info("remove " + table)
-    cur.execute("DROP TABLE %s" % table)
+    try:
+        logging.info("remove " + table)
+        cur.execute("DROP TABLE %s" % table)
+    except mysql.connector.errors.ProgrammingError:
+        pass
 
 
 if __name__ == "__main__":
