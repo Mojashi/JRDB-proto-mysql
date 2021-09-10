@@ -11,7 +11,13 @@
 - jrdb-account
 
 ## Usage
-1. create secret.py
+1. setup your db
+```sql=
+create database jrdb
+create user jrdb@localhost
+grant all on jrdb.* to jrdb@localhost
+```
+4. create secret.py
 ```python=
 JRDB_USER_ID = "YOUR JRDB USERID"
 JRDB_PASSWORD = "YOUR JRDB PASSWORD"
@@ -22,7 +28,7 @@ DB_PASS = ""
 UNIXSOCKET = "/var/run/mysqld/mysqld.sock"
 ```
 
-2. run
+4. run
 ```sh=
 make run
 ```
