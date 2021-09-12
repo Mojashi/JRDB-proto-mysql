@@ -3,6 +3,7 @@ import threading
 from db.config import TableConfigs
 from google.protobuf import json_format
 from mysql.connector.cursor import CursorBase
+import os
 from setupDB import getConn
 from utils import getDtypeDataDir
 from model.schema import Convertor, DataType
@@ -75,36 +76,25 @@ def insertAllData(cur: CursorBase, dtypeName: str,
     sqlModule = __import__(fromName + ".%s_sqlhelper" %
                            dtypeName, fromlist=[fromName])
     insertConvFunc = getattr(sqlModule, "conv%sProtoClassToData" % dtypeName.capitalize())
-    columnList = getattr(sqlModule, "get%sColumnNames" % dtypeName.capitalize())()
+    columnList: List[str] = getattr(sqlModule, "get%sColumnNames" % dtypeName.capitalize())()
 
     conf = TableConfigs[dtypeName]
     ignore = "IGNORE" if conf.ignoreDuplicate else ""
 
     files = sorted(glob.glob(dir + "/%s*.txt" % dtypeName.upper()))
 
-    que: queue.Queue = queue.Queue(-1)
+    que: queue.Queue = queue.Queue(100)
 
     def processQueue(que: queue.Queue, outputFile: str):
-        while True:
-            time.sleep(0.1)
-            cr: List[List[Any]] = []
-            try:
-                while True:
-                    cr.append(que.get_nowait())
-            except queue.Empty:
-                pass
-            if len(cr) == 0:
-                continue
-            logging.info(len(cr))
-            rows = itertools.chain.from_iterable(cr)
-            try:
-                values = list(map(lambda row: insertConvFunc(row), rows))
-                # holders = ",".join([r"%s" for _ in range(len(values[0]))])
-                # logging.info("a")
-                # cur.executemany(f"INSERT {ignore} INTO {dtypeName.capitalize()} "
-                #                 f"({columnList}) VALUES ({holders})", values)
-                with open(outputFile, "a") as f:
-                    for value in values:
+        with open(outputFile, "a") as f:
+            while True:
+                rows = que.get()
+                # finish signal
+                if len(rows) == 0:
+                    return
+
+                try:
+                    for value in map(lambda row: insertConvFunc(row), rows):
                         for elem in value:
                             if type(elem) == bytes:
                                 f.write(elem.hex())
@@ -114,15 +104,18 @@ def insertAllData(cur: CursorBase, dtypeName: str,
                                 f.write(str(elem))
                             f.write("\t")
                         f.write("\n")
-                logging.info("b")
-            except Exception as e:
-                with open("dump.log", "w") as f:
-                    for r in rows:
-                        f.write(json_format.MessageToJson(r))
-                raise e
+                except Exception as e:
+                    with open("dump.log", "w") as f:
+                        for r in rows:
+                            f.write(json_format.MessageToJson(r))
+                    raise e
 
+    dataFileName = "/var/lib/mysql-files/loaddata.txt"
+
+    if os.path.exists(dataFileName):
+        os.remove(dataFileName)
     th = threading.Thread(target=processQueue,
-        args=(que, "/var/lib/mysql-files/loaddata.txt"), daemon=True)
+                          args=(que, dataFileName), daemon=True)
     th.start()
 
     for fname in files:
@@ -130,8 +123,14 @@ def insertAllData(cur: CursorBase, dtypeName: str,
         with open(fname, "rb", 100000) as f:
             que.put(parseData(ProtoT, dtype, fieldConvertors, f))
 
-    cur.execute('LOAD DATA INFILE "/var/lib/mysql-files/loaddata.txt" %s'
-                'into table Cyb (%s) SET PROTO_BINARY=UNHEX(@var1);' % (ignore, columnList))
+    que.put([])  # send finish signal
+    th.join()
+
+    logging.info("load data into DB")
+    cur.execute('LOAD DATA INFILE "%s" %s '
+                'INTO TABLE %s (%s) SET PROTO_BINARY=UNHEX(@proto_binary)' %
+                (dataFileName, ignore, dtypeName.capitalize(),
+                 ",".join(columnList[:-1] + ["@proto_binary"])))
 
 
 def checkEmpty(cur: CursorBase, tableName: str) -> bool:
@@ -162,6 +161,7 @@ def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    import cProfile
-    cProfile.run('main()', "prof")
+    main()
+    # import cProfile
+    # cProfile.run('main()', "prof")
     exit(0)

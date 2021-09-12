@@ -16,6 +16,7 @@
 create database jrdb
 create user jrdb@localhost
 grant all on jrdb.* to jrdb@localhost
+grant FILE on *.* to jrdb@localhost
 ```
 2. create secret.py
 ```python=
