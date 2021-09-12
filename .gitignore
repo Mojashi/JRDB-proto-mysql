@@ -8,3 +8,6 @@ proto/build/*
 secret.py
 data/
 dump.log
+output.svg
+prof
+loaddata.txt
