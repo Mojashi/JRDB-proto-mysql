@@ -7,6 +7,7 @@ proto/build/*
 !proto/build/__init__.py
 secret.py
 data/
+parsedData/
 dump.log
 output.svg
 prof

@@ -8,24 +8,10 @@ import time
 import zipfile
 import re
 import logging
-from typing import List, Tuple
+from typing import List
 from env import DataDir, DtypeDescs
 from secret import JRDB_USER_ID, JRDB_PASSWORD
-from utils import getDtypeDataDir
-
-
-def splitZipName(name: str) -> Tuple[str, str]:
-    # "CYB210815.zip" -> ("CYB", "210815")
-    idx = next(i for i, v in enumerate(name) if v.isnumeric())
-    return name[:idx], name[idx:-4]
-
-
-def getFileName(scname: str, date: str) -> str:
-    return scname.upper() + date + ".txt"
-
-
-def getZipName(scname: str, date: str) -> str:
-    return scname.upper() + date + ".zip"
+from utils import getDtypeDataDir, getFileName, getZipName, splitZipName, yearFromDate
 
 
 def getYearPackDLURL(dtypeName: str, year: int) -> str:
@@ -87,13 +73,6 @@ def extractSpecificDate(dtypeName: str, date: str, dir: str):
     zipfile.ZipFile(io.BytesIO(
         GETWithAuth(getSpecificDateDLURL(dtypeName, date)))
     ).extractall(dir)
-
-
-def yearFromDate(date: str) -> int:
-    if date[:2] == "99":
-        return 1999
-    else:
-        return int("20" + date[:2])
 
 
 def dlMissingFile(dtypeName: str, dataDir: str = DataDir):

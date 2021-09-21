@@ -2,7 +2,7 @@ from model.conv import convFloatType, convIntTypeDEC, convIntTypeHEX, convSigned
 from model.conv import convSignedIntTypeDEC, convSignedIntTypeHEX, convStrType
 import pykakasi
 from typing import Callable, Dict, List, Optional, Type, Union
-from env import KnownFieldParentNameAlias, KnownIgnoredFieldFullName,\
+from config import KnownFieldParentNameAlias, KnownIgnoredFieldFullName,\
      KnownIgnoredFieldName, KnownFieldTypes
 import re
 

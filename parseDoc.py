@@ -1,9 +1,11 @@
 #! python
 # https://scrapbox.io/exkeiba/doc%E3%81%AEparse
 
+from config import RaceInfoDtypes
 import subprocess
 import os
 from typing import List
+import utils
 from env import DocDir, ProtoBuildDir, ProtoDir, ProtoMySQLDir
 from model.schema import DataType, Field
 import logging
@@ -81,6 +83,23 @@ def getDataType(dtname: str, docDir: str = DocDir) -> DataType:
         return parseDoc(f.read(), dtname)
 
 
+def genRACEINFOproto(protoDir: str = ProtoDir):
+    with open(protoDir+"/raceinfo.proto", "w") as f:
+        imports = "\n".join(map(lambda name: f"import \"{name}.proto\";", RaceInfoDtypes))
+        fields = "\n".join(map(lambda numname: "\t{repeated}{tname} {name} = {num};".format(
+            repeated="repeated " if utils.isEveryHorseInfo(numname[1]) else "optional ",
+            tname=numname[1].capitalize(),
+            name=numname[1],
+            num=numname[0] + 1,
+        ), enumerate(RaceInfoDtypes)))
+        f.write(
+            "syntax = \"proto3\";\n" + imports + "\n"
+            "message RaceInfo {\n" +
+            fields +
+            "\n}\n"
+        )
+
+
 def parseAll(docDir: str = DocDir, protoDir: str = ProtoDir):
     os.makedirs(protoDir, exist_ok=True)
 
@@ -88,6 +107,7 @@ def parseAll(docDir: str = DocDir, protoDir: str = ProtoDir):
         dtype = getDataType(docfname)
         with open(protoDir + "/" + dtype.dtname + ".proto", "w") as protof:
             protof.write(dtype.genProto())
+    genRACEINFOproto()
 
 
 def execProtoc(protoDir: str = ProtoDir,
@@ -98,7 +118,7 @@ def execProtoc(protoDir: str = ProtoDir,
     subprocess.run(f"protoc --plugin={protoMySQLDir}/protoc-gen-mysql "
                    f"--mysql_out={protoBuildDir} --cpp_out={protoBuildDir} --python_out={protoBuildDir} "
                    f"-I{protoMySQLDir} -I{protoDir} {protoDir}/*.proto", shell=True)
-    subprocess.run(f"protoc --python_out={protoBuildDir} "
+    subprocess.run(f"protoc --python_out={protoBuildDir} --cpp_out={protoBuildDir} "
                    f"-I{protoMySQLDir} {protoMySQLDir}/mySQLOptions.proto", shell=True)
 
 
