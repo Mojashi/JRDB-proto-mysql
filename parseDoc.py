@@ -90,11 +90,11 @@ def genRACEINFOproto(protoDir: str = ProtoDir):
             repeated="repeated " if utils.isEveryHorseInfo(numname[1]) else "optional ",
             tname=numname[1].capitalize(),
             name=numname[1],
-            num=numname[0] + 1,
+            num=numname[0] + 2,
         ), enumerate(RaceInfoDtypes)))
         f.write(
             "syntax = \"proto3\";\n" + imports + "\n"
-            "message RaceInfo {\n" +
+            "message RaceInfo {\n\tint32 racekey = 1;\n" +
             fields +
             "\n}\n"
         )

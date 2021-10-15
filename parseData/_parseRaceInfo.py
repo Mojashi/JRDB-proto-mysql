@@ -15,7 +15,8 @@ def convDay(day: str, dtinfos: Mapping[str, DTInfo]) -> Iterable[raceinfo_pb2.Ra
     infos: Dict[int, raceinfo_pb2.RaceInfo] = {}
 
     for dtname, dtinfo in dtinfos.items():
-        fname = DataDir + "/" + dtname.lower() + "/" + dtname.upper() + day + ".txt"
+        fname = DataDir + "/" + DtypeDescs[dtname].dataIncludedIn +\
+            "/" + dtname.upper() + day + ".txt"
         protoT, dtype, convs, isEvery = dtinfo
         try:
             with open(fname, "rb", 100000) as f:
@@ -29,12 +30,13 @@ def convDay(day: str, dtinfos: Mapping[str, DTInfo]) -> Iterable[raceinfo_pb2.Ra
                     racekey = nen*10000000 + kai*1000000 + nichi*1000 + r*100 + bacode
                     if racekey not in infos:
                         infos[racekey] = raceinfo_pb2.RaceInfo()
+                        infos[racekey].racekey = racekey
 
                     if isEvery:
                         getattr(getattr(infos[racekey], dtname), "append")(d)
                     else:
                         getattr(getattr(infos[racekey],
-                                dtname), "MergeFrom")(d)
+                                dtname), "CopyFrom")(d)
         except FileNotFoundError:
             pass
 
